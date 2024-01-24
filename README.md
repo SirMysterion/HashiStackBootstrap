@@ -1,6 +1,6 @@
-# HashiStackBootstrap
+# HashiStackBootstrap + ACL
 
-Not all of these are sane defaults but enought to get a basic setup started that is not -Dev flag.
+Not all of these are sane defaults but enought to get a basic setup started that is not using the -Dev flag.
 
 ## Start Services
 Recomended to run each in their own terminal
@@ -72,7 +72,7 @@ Or, Cause I want to use a sledge hammer
 sed -i "s/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/${CONSUL_HTTP_TOKEN}/" vault/config.hcl
 ```
 
-Restart Vault
+Restart Vault and unseal
 ```
 vault operator unseal $(cat vault.bootstrap | grep "Unseal Key 1" | awk '{print $4}')
 vault operator unseal $(cat vault.bootstrap | grep "Unseal Key 2" | awk '{print $4}')
