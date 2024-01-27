@@ -81,7 +81,7 @@ vault operator unseal $(cat vault.bootstrap | grep "Unseal Key 3" | awk '{print 
 
 ## NOMAD START
 ```
-export NOMAD_HTTP_ADDR=localhost:4646
+export NOMAD_ADDR=localhost:4646
 nomad acl bootstrap | tee nomad.bootstrap
 export NOMAD_TOKEN=$(cat nomad.bootstrap | grep "Secret ID" | awk '{print $4}')
 vault secrets enable nomad
