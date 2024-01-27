@@ -114,7 +114,7 @@ Read: [Consul ACL with Nomad Workload Identities](https://developer.hashicorp.co
 consul acl auth-method create -name 'nomad-workloads' -type 'jwt' -description 'JWT auth method for Nomad services and workloads' -config '@nomad/consul-auth-method-nomad-workloads.json'
 consul acl binding-rule create -method 'nomad-workloads' -description 'Binding rule for services registered from Nomad' -bind-type 'service' -bind-name '${value.nomad_service}' -selector '"nomad_service" in value'
 consul acl binding-rule create -method 'nomad-workloads' -description 'Binding rule for Nomad tasks' -bind-type 'role' -bind-name 'nomad-tasks-${value.nomad_namespace}' -selector '"nomad_service" not in value'
-consul acl policy create -name 'nomad-tasks' -description 'ACL policy used by Nomad tasks' -rules '@consul/consul-policy-nomad-tasks.hcl'
+consul acl policy create -name 'nomad-tasks' -description 'ACL policy used by Nomad tasks' -rules '@nomad/consul-policy-nomad-tasks.hcl'
 consul acl role create -name 'nomad-tasks-default' -description 'ACL role for Nomad tasks in the default Nomad namespace' -policy-name 'nomad-tasks'
 ```
 
