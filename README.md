@@ -62,9 +62,12 @@ consul acl set-agent-token agent $(cat consul.bootstrap | grep SecretID | awk '{
 ## Vault/Consul Service Register
 
 ```
-# consul acl policy create -name vault-servers -rules @vault-servers-policy.hcl
-# vault write consul/roles/vault-servers-role policies=vault-servers
-# vault read consul/creds/vault-servers-role | tee vault-server.token
+consul acl policy create -name vault-servers -rules @consul/vault-servers-policy.hcl
+vault write consul/roles/vault-servers-role policies=vault-servers
+vault read consul/creds/vault-servers-role | tee vault-server.token
+export VAULT_CONSUL_TOKEN=$(cat vault-server-consul.token| grep "token" | awk '{print $2}')
+
+sed -i "s/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/${VAULT_CONSUL_TOKEN}/" vault/config.hcl
 ```
 Or, Cause I want to use a sledge hammer
 
@@ -81,7 +84,7 @@ vault operator unseal $(cat vault.bootstrap | grep "Unseal Key 3" | awk '{print 
 
 ## NOMAD START
 ```
-export NOMAD_ADDR=localhost:4646
+export NOMAD_ADDR=http://localhost:4646
 nomad acl bootstrap | tee nomad.bootstrap
 export NOMAD_TOKEN=$(cat nomad.bootstrap | grep "Secret ID" | awk '{print $4}')
 vault secrets enable nomad
@@ -90,9 +93,15 @@ vault write nomad/config/access address=${NOMAD_HTTP_ADDR} token=$NOMAD_TOKEN
 
 # Nomad/Consul Service Register
 ```
-# consul acl policy create -name "nomad-server" -description "Nomad Server Policy" -rules @nomad-server-policy.hcl
-# consul acl policy create -name "nomad-client" -description "Nomad Client Policy" -rules @nomad-client-policy.hcl
-# consul acl token create -description "Nomad Demo Agent Token" -policy-name "nomad-server" -policy-name "nomad-client" | tee nomad-agent.token
+consul acl policy create -name "nomad-server" -description "Nomad Server Policy" -rules @nomad/nomad-server-policy.hcl
+consul acl policy create -name "nomad-client" -description "Nomad Client Policy" -rules @nomad/nomad-client-policy.hcl
+consul acl policy create -name "consul-agent" -description "Consul Agent Policy" -rules @consul/consul-agent-policy.hcl
+consul acl token create -description "Nomad Demo Agent Token" -policy-name "nomad-server" -policy-name "nomad-client" | tee nomad-agent.token
+consul acl token create -description "Nomad Server Agent Token" -policy-name "nomad-server" | tee nomad-server-agent.token
+consul acl token create -description "Nomad Client Agent Token" -policy-name "consul-agent" | tee consul-client-agent.token
+consul acl token create -description "Consul Client Token" -policy-name "nomad-client" | tee nomad-client-agent.token
+export NOMAD_SERVER_CONSUL_TOKEN=$(cat nomad-server-agent.token | grep "SecretID:" | awk '{print $2}')
+sed -i "s/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/${NOMAD_SERVER_CONSUL_TOKEN}/" nomad/config.hcl
 ```
 
 Or, Cause I want to use a sledge hammer
